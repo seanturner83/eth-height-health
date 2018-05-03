@@ -1,6 +1,17 @@
 language: go
 go:
 - '1.10.x'
+
+before_install:
+  - go get github.com/mitchellh/gox
+
+install:
+  - # skip
+
+script:
+  - go get -t -v ./...
+  - gox -os="linux darwin windows" -arch="amd64" -output="eth-height-health.." -verbose ./...
+
 deploy:
   provider: releases
   api_key:
