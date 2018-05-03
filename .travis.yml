@@ -1,0 +1,9 @@
+language: go
+
+go:
+  - "1.10.x"
+before_install:
+  - go get -u github.com/ybbus/jsonrpc
+
+script:
+  - go install github.com/seanturner83/eth-height-health
