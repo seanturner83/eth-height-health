@@ -8,3 +8,5 @@ deploy:
   file: eth-height-health
   on:
     repo: seanturner83/eth-height-health
+    tags: true
+    all_branches: true
