@@ -3,15 +3,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/DataDog/datadog-go/statsd"
 	jsonrpc2 "github.com/ybbus/jsonrpc"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-	"os"
-	"github.com/DataDog/datadog-go/statsd"
 )
 
 type Ethereum_v1 struct {
@@ -43,17 +43,17 @@ type RPC2 struct {
 }
 
 func getEnv(key, fallback string) string {
-    if value, ok := os.LookupEnv(key); ok {
-        return value
-    }
-    return fallback
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
 
 func main() {
-	ethereum_node :=	getEnv("ETH_HEALTH_NODE", "http://localhost:8545")
-	threshold :=		getEnv("ETH_HEALTH_THRESHOLD", "10")
-	dd_metrics :=		getEnv("ETH_HEALTH_ENABLE_DD", "false")
-	listen_addr :=		getEnv("ETH_HEALTH_LISTEN_ADDR", ":8080")
+	ethereum_node := getEnv("ETH_HEALTH_NODE", "http://localhost:8545")
+	threshold := getEnv("ETH_HEALTH_THRESHOLD", "10")
+	dd_metrics := getEnv("ETH_HEALTH_ENABLE_DD", "false")
+	listen_addr := getEnv("ETH_HEALTH_LISTEN_ADDR", ":8080")
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
@@ -164,13 +164,13 @@ func main() {
 		}
 
 		dd, err := strconv.ParseBool(dd_metrics)
-		log.Print(dd)
 		if err != nil {
 			http.Error(w, "ETH_HEALTH_ENABLE_DD must parse to a boolean or be unset", 500)
 		}
+
 		fmt.Fprint(w, "Current chain height according to blockcypher; ", h, ", nanopool; ", nh, ", etherscan; ", eh, ", current height on this node; ", dec)
+
 		if dd == true {
-			log.Print("hello bitch")
 			c, err := statsd.New("127.0.0.1:8125")
 			if err != nil {
 				log.Print(err)
@@ -190,10 +190,10 @@ func main() {
 		}
 	})
 	srv := &http.Server{
-		Addr:		listen_addr,
-		ReadTimeout:	5 * time.Second,
-		WriteTimeout:	10 * time.Second,
-		IdleTimeout:	25 * time.Second,
+		Addr:         listen_addr,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  25 * time.Second,
 	}
 	log.Fatal(srv.ListenAndServe())
 
