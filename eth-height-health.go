@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"os"
+	"github.com/DataDog/datadog-go/statsd"
 )
 
 type Ethereum_v1 struct {
@@ -40,12 +42,20 @@ type RPC2 struct {
 	Result  string `json:"result"`
 }
 
+func getEnv(key, fallback string) string {
+    if value, ok := os.LookupEnv(key); ok {
+        return value
+    }
+    return fallback
+}
+
 func main() {
+	ethereum_node :=	getEnv("ETH_HEALTH_NODE", "http://localhost:8545")
+	threshold :=		getEnv("ETH_HEALTH_THRESHOLD", "10")
+	dd_metrics :=		getEnv("ETH_HEALTH_ENABLE_DD", "false")
+	listen_addr :=		getEnv("ETH_HEALTH_LISTEN_ADDR", ":8080")
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
-
-		var ethereum_node = "http://localhost:8545"
-		var threshold = 10
 
 		i := 0
 		// blockcypher REST API
@@ -137,7 +147,10 @@ func main() {
 		}
 
 		var th int64
-		th = int64(threshold)
+		th, err = strconv.ParseInt(threshold, 10, 64)
+		if err != nil {
+			http.Error(w, "ETH_HEALTH_THRESHOLD must be a number or unset", 500)
+		}
 		us := dec + th
 
 		if h > us {
@@ -150,9 +163,38 @@ func main() {
 			http.Error(w, "Etherscan is ahead of this node!", 400)
 		}
 
+		dd, err := strconv.ParseBool(dd_metrics)
+		log.Print(dd)
+		if err != nil {
+			http.Error(w, "ETH_HEALTH_ENABLE_DD must parse to a boolean or be unset", 500)
+		}
 		fmt.Fprint(w, "Current chain height according to blockcypher; ", h, ", nanopool; ", nh, ", etherscan; ", eh, ", current height on this node; ", dec)
+		if dd == true {
+			log.Print("hello bitch")
+			c, err := statsd.New("127.0.0.1:8125")
+			if err != nil {
+				log.Print(err)
+			}
+			hf := float64(h)
+			nhf := float64(nh)
+			ehf := float64(eh)
+			decf := float64(dec)
+			c.Namespace = "eth-height-health."
+			err = c.Gauge("blockcypher", hf, nil, 1)
+			err = c.Gauge("nanopool", nhf, nil, 1)
+			err = c.Gauge("etherscan", ehf, nil, 1)
+			err = c.Gauge(os.Getenv("HOSTNAME"), decf, nil, 1)
+			if err != nil {
+				log.Print(err)
+			}
+		}
 	})
-
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	srv := &http.Server{
+		Addr:		listen_addr,
+		ReadTimeout:	5 * time.Second,
+		WriteTimeout:	10 * time.Second,
+		IdleTimeout:	25 * time.Second,
+	}
+	log.Fatal(srv.ListenAndServe())
 
 }
