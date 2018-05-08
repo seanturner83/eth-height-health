@@ -183,7 +183,7 @@ func main() {
 			err = c.Gauge("blockcypher", hf, nil, 1)
 			err = c.Gauge("nanopool", nhf, nil, 1)
 			err = c.Gauge("etherscan", ehf, nil, 1)
-			err = c.Gauge(os.Getenv("HOSTNAME"), decf, nil, 1)
+			err = c.Gauge("self", decf, nil, 1)
 			if err != nil {
 				log.Print(err)
 			}
