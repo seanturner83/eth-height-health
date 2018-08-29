@@ -7,7 +7,7 @@ RUN zip -r -0 /zoneinfo.zip .
 
 FROM scratch
 # the binary:
-ADD eth-height-health /eth-height-health
+ADD eth-height-health_darwin_amd64 /eth-height-health
 # the timezone data:
 ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
