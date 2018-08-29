@@ -2,6 +2,11 @@ language: go
 go:
 - '1.10.x'
 
+sudo: required
+
+services:
+  - docker
+
 before_install:
   - go get github.com/mitchellh/gox
 
@@ -24,3 +29,9 @@ deploy:
   on:
     repo: seanturner83/eth-height-health
     all_branches: true
+
+after_success:
+ - docker build -t "seanturner83/eth-height-health:${TRAVIS_TAG} ."
+ - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+ - docker push "seanturner83/eth-height-health:${TRAVIS_TAG}"
+
