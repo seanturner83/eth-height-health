@@ -4,6 +4,7 @@ WORKDIR /usr/share/zoneinfo
 # -0 means no compression.  Needed because go's
 # tz loader doesn't handle compressed data.
 RUN zip -r -0 /zoneinfo.zip .
+RUN adduser -D golang
 
 FROM scratch
 # the binary:
@@ -13,4 +14,7 @@ ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
 # the tls certificates:
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+# the user db
+COPY --from=alpine /etc/passwd /etc/passwd
+USER golang
 ENTRYPOINT ["/eth-height-health"]
