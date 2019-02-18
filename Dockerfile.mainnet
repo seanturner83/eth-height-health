@@ -8,7 +8,7 @@ RUN adduser -D golang
 
 FROM scratch
 # the binary:
-ADD cmd/mainnet/eth-height-health_linux_amd64 /eth-height-health
+ADD cmd/mainnet/mainnet_linux_amd64 /eth-height-health
 # the timezone data:
 ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
