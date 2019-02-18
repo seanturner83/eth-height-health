@@ -41,4 +41,5 @@ after_deploy:
  - docker build -t seanturner83/eth-height-health:testnet-${TRAVIS_TAG} -f Dockerfile.testnet .
  - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
  - docker push "seanturner83/eth-height-health:mainnet-${TRAVIS_TAG}"
+ - docker push "seanturner83/eth-height-health:testnet-${TRAVIS_TAG}"
 
