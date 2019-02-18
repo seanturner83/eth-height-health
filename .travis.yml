@@ -15,7 +15,8 @@ install:
 
 script:
   - go get -t -v ./...
-  - CGO_ENABLED=0 gox -os="linux darwin windows" -arch="amd64" -verbose ./...
+  - CGO_ENABLED=0 gox -os="linux darwin windows" -arch="amd64" -verbose cmd/mainnet/
+  - CGO_ENABLED=0 gox -os="linux darwin windows" -arch="amd64" -verbose cmd/testnet
 
 deploy:
   provider: releases
